@@ -9,5 +9,17 @@ pipeline {
             }
         }
 
+        stage('Trivy Filesystem Scan') {
+            steps {
+                sh 'trivy fs .'
+            }
+        }
+
+        stage('Trivy Image Scan') {
+            steps {
+                sh 'trivy image devsecops-flask'
+            }
+        }
+
     }
-} 
+}
