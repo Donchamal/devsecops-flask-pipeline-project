@@ -1,7 +1,24 @@
 pipeline {
     agent any
 
+    tools {
+        sonarQube 'SonarScanner'
+    }
+
     stages {
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    def scannerHome = tool 'SonarScanner'
+                    withSonarQubeEnv('SonarQube') {
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner
+                        """
+                    }
+                }
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
@@ -20,6 +37,5 @@ pipeline {
                 sh 'trivy image devsecops-flask'
             }
         }
-
     }
 }

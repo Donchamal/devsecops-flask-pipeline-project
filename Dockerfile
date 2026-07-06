@@ -1,13 +1,16 @@
-FROM python:3.11-slim
+FROM jenkins/jenkins:lts
 
-WORKDIR /app
+USER root
 
-COPY requirements.txt .
+RUN apt-get update && \
+    apt-get install -y \
+    docker.io \
+    wget \
+    curl \
+    gnupg \
+    lsb-release && \
+    apt-get clean
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
 
-COPY . .
-
-EXPOSE 5000
-
-CMD ["python", "app.py"]
+USER jenkins
