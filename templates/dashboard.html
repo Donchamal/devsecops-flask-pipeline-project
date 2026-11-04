@@ -1,13 +1,103 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-    <title>Dashboard</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1220">
+  <title>Overview | DevSecOps Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root{--bg:#0b1220;--surface:#111c2d;--panel:#142136;--border:#26384e;--muted:#91a4bd;--text:#e5edf8;--blue:#60a5fa;--green:#34d399}
+    *{box-sizing:border-box}body{min-height:100vh;margin:0;background:radial-gradient(circle at 8% 0%,#17345a 0,transparent 28%),var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+    .topbar{height:72px;background:#101b2b;border-bottom:1px solid var(--border)}.brand{font-weight:750;letter-spacing:-.3px;color:#fff;text-decoration:none}.brand-mark{display:inline-grid;place-items:center;width:34px;height:34px;margin-right:9px;border:1px solid #315b86;border-radius:10px;background:#122944;color:var(--blue)}
+    .muted{color:var(--muted)}.main-wrap{max-width:1440px}.eyebrow{color:var(--blue);font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase}.page-title{font-size:clamp(27px,3vw,36px);font-weight:780;letter-spacing:-1.1px}.panel,.stat-card,.tool-card{background:linear-gradient(145deg,#172438,#111c2d);border:1px solid var(--border);border-radius:16px}.stat-card{padding:19px;height:100%}.stat-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:11px;background:#1d3554;color:var(--blue)}.stat-value{font-size:23px;font-weight:780;letter-spacing:-.5px}.status-dot{display:inline-block;width:8px;height:8px;margin-right:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px #34d39966}.tag{display:inline-flex;align-items:center;padding:6px 10px;border:1px solid #1d5548;border-radius:99px;background:#123b32;color:#6ee7b7;font-size:11px;font-weight:700}.section-title{font-size:17px;font-weight:750}.tool-card{height:100%;padding:20px;transition:transform .18s ease,border-color .18s ease}.tool-card:hover{transform:translateY(-3px);border-color:#41658e}.tool-icon{width:43px;height:43px;display:grid;place-items:center;border-radius:12px;background:#1d3554;color:var(--blue);font-size:18px}.tool-name{font-size:17px;font-weight:750}.tool-link{color:#8fc1ff;text-decoration:none;font-size:13px;font-weight:650}.tool-link:hover{color:#bfdbfe}.tool-note{font-size:12px;color:var(--muted);line-height:1.55}.flow-step{height:100%;padding:15px;border:1px solid var(--border);border-radius:12px;background:#101b2b}.flow-number{font-size:11px;color:var(--blue);font-weight:800;letter-spacing:1px}.flow-label{font-size:13px;font-weight:700}.flow-arrow{color:#52677f}.btn-logout{border-color:#52677f;color:#d8e4f2}.btn-logout:hover{background:#26384e;color:#fff}.footer{color:#647991;font-size:12px}
+    @media(max-width:767px){.topbar{height:auto;min-height:66px}.topbar .container-fluid{gap:12px}.flow-arrow{display:none}.page-intro{align-items:flex-start!important;flex-direction:column}.tool-card{padding:17px}}
+  </style>
 </head>
 <body>
+  <nav class="navbar topbar px-3 px-lg-4">
+    <div class="container-fluid main-wrap px-0">
+      <a class="brand" href="{{ url_for('dashboard') }}"><span class="brand-mark"><i class="fa-solid fa-shield-halved"></i></span>DevSecOps Portal</a>
+      <div class="d-flex align-items-center gap-3">
+        <span class="muted small d-none d-sm-inline">Signed in as <strong class="text-white">{{ username }}</strong></span>
+        <form method="post" action="{{ url_for('logout') }}" class="m-0">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline-light btn-logout" type="submit"><i class="fa-solid fa-arrow-right-from-bracket me-1"></i> Sign out</button>
+        </form>
+      </div>
+    </div>
+  </nav>
 
-<h1>Dashboard</h1>
+  <main class="container-fluid main-wrap px-3 px-lg-4 py-4 py-lg-5">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}<div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>{% endfor %}
+    {% endwith %}
 
-<p>Project is running successfully!</p>
+    <section class="d-flex justify-content-between page-intro gap-3 mb-4 mb-lg-5">
+      <div>
+        <div class="eyebrow mb-2">Control centre / Overview</div>
+        <h1 class="page-title mb-2">Good to see you, {{ username }}.</h1>
+        <p class="muted mb-0">A central workspace for your application, delivery pipeline and security tools.</p>
+      </div>
+      <div class="pt-1"><span class="tag"><span class="status-dot"></span>Application session active</span></div>
+    </section>
 
+    <section class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3"><article class="stat-card"><div class="d-flex justify-content-between align-items-center mb-3"><span class="muted small">Web application</span><span class="stat-icon"><i class="fa-solid fa-globe"></i></span></div><div class="stat-value">Online</div><div class="muted small mt-1"><span class="status-dot"></span>Flask is serving this page</div></article></div>
+      <div class="col-12 col-sm-6 col-xl-3"><article class="stat-card"><div class="d-flex justify-content-between align-items-center mb-3"><span class="muted small">Authentication</span><span class="stat-icon"><i class="fa-solid fa-user-shield"></i></span></div><div class="stat-value">Protected</div><div class="muted small mt-1">Authenticated session required</div></article></div>
+      <div class="col-12 col-sm-6 col-xl-3"><article class="stat-card"><div class="d-flex justify-content-between align-items-center mb-3"><span class="muted small">Delivery pipeline</span><span class="stat-icon"><i class="fa-solid fa-code-branch"></i></span></div><div class="stat-value">Jenkins</div><div class="muted small mt-1">Open Jenkins to inspect build results</div></article></div>
+      <div class="col-12 col-sm-6 col-xl-3"><article class="stat-card"><div class="d-flex justify-content-between align-items-center mb-3"><span class="muted small">Security analysis</span><span class="stat-icon"><i class="fa-solid fa-shield-virus"></i></span></div><div class="stat-value">SonarQube + Trivy</div><div class="muted small mt-1">Review the latest scan reports</div></article></div>
+    </section>
+
+    <section class="mb-4 mb-lg-5">
+      <div class="d-flex justify-content-between align-items-end mb-3"><div><div class="eyebrow mb-1">Connected tools</div><h2 class="section-title mb-0">Your DevSecOps toolchain</h2></div><span class="muted small d-none d-sm-inline">Open each local service</span></div>
+      <div class="row g-3">
+        <div class="col-12 col-md-6 col-xl-3"><article class="tool-card"><div class="tool-icon mb-3"><i class="fa-brands fa-jenkins"></i></div><div class="tool-name mb-1">Jenkins</div><p class="tool-note mb-3">Run the CI/CD pipeline and inspect build history and console output.</p><a class="tool-link" href="http://localhost:8080/" target="_blank" rel="noopener noreferrer">Open Jenkins <i class="fa-solid fa-arrow-up-right-from-square ms-1"></i></a></article></div>
+        <div class="col-12 col-md-6 col-xl-3"><article class="tool-card"><div class="tool-icon mb-3"><i class="fa-solid fa-chart-line"></i></div><div class="tool-name mb-1">SonarQube</div><p class="tool-note mb-3">Review static analysis, bugs, code smells and security findings.</p><a class="tool-link" href="http://localhost:9000/" target="_blank" rel="noopener noreferrer">Open SonarQube <i class="fa-solid fa-arrow-up-right-from-square ms-1"></i></a></article></div>
+        <div class="col-12 col-md-6 col-xl-3"><article class="tool-card"><div class="tool-icon mb-3"><i class="fa-brands fa-docker"></i></div><div class="tool-name mb-1">Docker</div><p class="tool-note mb-3">Build and run the Flask application as a container image.</p><span class="tool-note">Manage containers in Docker Desktop</span></article></div>
+        <div class="col-12 col-md-6 col-xl-3"><article class="tool-card"><div class="tool-icon mb-3"><i class="fa-solid fa-magnifying-glass-chart"></i></div><div class="tool-name mb-1">Trivy</div><p class="tool-note mb-3">Scan project dependencies and container images for known vulnerabilities.</p><span class="tool-note">View scan output in Jenkins build logs</span></article></div>
+      </div>
+    </section>
+
+    <section class="panel p-3 p-lg-4 mb-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+        <div><div class="eyebrow mb-1">Live integration</div><h2 class="section-title mb-0">Jenkins pipeline status</h2></div>
+        {% if jenkins.available %}<span class="tag"><span class="status-dot"></span>Jenkins API connected</span>
+        {% else %}<span class="badge text-bg-warning">Not connected</span>{% endif %}
+      </div>
+      {% if jenkins.available %}
+        <div class="row g-3 mb-3">
+          <div class="col-6 col-lg-3"><div class="flow-step"><div class="tool-note">Latest build</div><div class="stat-value">{% if jenkins.last_build_number %}#{{ jenkins.last_build_number }}{% else %}—{% endif %}</div></div></div>
+          <div class="col-6 col-lg-3"><div class="flow-step"><div class="tool-note">Build result</div><div class="stat-value">{{ jenkins.status }}</div></div></div>
+          <div class="col-6 col-lg-3"><div class="flow-step"><div class="tool-note">Last build duration</div><div class="stat-value">{{ jenkins.duration }}</div></div></div>
+          <div class="col-6 col-lg-3"><div class="flow-step"><div class="tool-note">Last successful build</div><div class="stat-value">{% if jenkins.last_success_number %}#{{ jenkins.last_success_number }}{% else %}—{% endif %}</div></div></div>
+        </div>
+        <h3 class="section-title mt-3">Recent builds</h3>
+        {% if jenkins.history %}<div class="table-responsive"><table class="table table-dark table-sm align-middle mb-0"><thead><tr><th>Build</th><th>Result</th><th>Duration</th></tr></thead><tbody>
+          {% for build in jenkins.history %}<tr><td>#{{ build.number }}</td><td>{{ build.status }}</td><td>{{ build.duration }}</td></tr>{% endfor %}
+        </tbody></table></div>{% else %}<p class="muted small mb-0">No build history is available yet.</p>{% endif %}
+      {% else %}
+        <p class="muted mb-2">{{ jenkins.message }}</p>
+        <p class="tool-note mb-0">Configure JENKINS_URL, JENKINS_USER and JENKINS_TOKEN in the same PowerShell session used to start Flask. The token is kept server-side and is never displayed in the browser.</p>
+      {% endif %}
+      <div class="mt-3"><a class="tool-link" href="http://localhost:8080/" target="_blank" rel="noopener noreferrer">Open Jenkins <i class="fa-solid fa-arrow-up-right-from-square ms-1"></i></a></div>
+    </section>
+
+    <section class="panel p-3 p-lg-4 mb-4">
+      <div class="eyebrow mb-1">Automated workflow</div><h2 class="section-title mb-1">CI/CD pipeline stages</h2><p class="muted small mb-4">The configured Jenkins pipeline processes the application through these stages.</p>
+      <div class="row g-2 align-items-stretch">
+        <div class="col-6 col-lg"><div class="flow-step"><div class="flow-number">01 / SOURCE</div><div class="flow-label mt-2"><i class="fa-brands fa-github me-1"></i> GitHub</div><div class="tool-note mt-1">Source checkout</div></div></div>
+        <div class="col-6 col-lg"><div class="flow-step"><div class="flow-number">02 / QUALITY</div><div class="flow-label mt-2"><i class="fa-solid fa-chart-line me-1"></i> SonarQube</div><div class="tool-note mt-1">Static analysis</div></div></div>
+        <div class="col-6 col-lg"><div class="flow-step"><div class="flow-number">03 / BUILD</div><div class="flow-label mt-2"><i class="fa-brands fa-docker me-1"></i> Docker</div><div class="tool-note mt-1">Image build</div></div></div>
+        <div class="col-6 col-lg"><div class="flow-step"><div class="flow-number">04 / SCAN</div><div class="flow-label mt-2"><i class="fa-solid fa-folder-tree me-1"></i> Trivy FS</div><div class="tool-note mt-1">Filesystem scan</div></div></div>
+        <div class="col-12 col-lg"><div class="flow-step"><div class="flow-number">05 / SCAN</div><div class="flow-label mt-2"><i class="fa-solid fa-cube me-1"></i> Trivy Image</div><div class="tool-note mt-1">Container scan</div></div></div>
+      </div>
+      <div class="d-flex flex-wrap gap-2 mt-4"><a class="btn btn-primary btn-sm" href="http://localhost:8080/" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-play me-1"></i> Open Jenkins pipeline</a><a class="btn btn-outline-light btn-sm" href="{{ url_for('health') }}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-heart-pulse me-1"></i> Check app health</a></div>
+    </section>
+
+    <footer class="footer d-flex flex-wrap justify-content-between gap-2"><span>DevSecOps Portal · Local development environment</span><span>Flask · Jenkins · SonarQube · Docker · Trivy</span></footer>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

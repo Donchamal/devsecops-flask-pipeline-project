@@ -16,7 +16,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t devsecops-flask .'
+               sh 'docker build -f dockerfile.app -t devsecops-flask .'
             }
         }
 
