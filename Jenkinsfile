@@ -20,7 +20,7 @@ pipeline {
                 script {
                     def scannerHome = tool 'SonarScanner'
                     withSonarQubeEnv('SonarQube') {
-                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.python.coverage.reportPaths=coverage.xml"
+                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.sources=app.py -Dsonar.tests=. -Dsonar.test.inclusions=**/test_*.py -Dsonar.python.coverage.reportPaths=coverage.xml"
                     }
                 }
             }
@@ -43,7 +43,6 @@ pipeline {
                 sh 'trivy image devsecops-flask'
             }
         }
-
     }
 
     post {
