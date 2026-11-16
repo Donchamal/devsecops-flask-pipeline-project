@@ -165,6 +165,92 @@ def fetch_jenkins_data():
     return {"configured": True, "available": False, "message": message}
 
 
+def fetch_sonarqube_data():
+    """Fetch live SonarQube quality and security metrics."""
+
+    base_url = os.environ.get("SONAR_URL", "http://localhost:9000").rstrip("/")
+    token = os.environ.get("SONAR_TOKEN")
+    project_key = os.environ.get("SONAR_PROJECT_KEY", "DevSecOps-Flask")
+
+    if not token:
+        return {
+            "configured": False,
+            "available": False,
+            "message": "SonarQube token is not configured."
+        }
+
+    try:
+        auth = HTTPBasicAuth(token, "")
+
+        quality_response = requests.get(
+            f"{base_url}/api/qualitygates/project_status",
+            params={"projectKey": project_key},
+            auth=auth,
+            timeout=10
+        )
+        quality_response.raise_for_status()
+
+        measures_response = requests.get(
+            f"{base_url}/api/measures/component",
+            params={
+                "component": project_key,
+                "metricKeys": (
+                    "bugs,vulnerabilities,code_smells,coverage,"
+                    "duplicated_lines_density,reliability_rating,"
+                    "security_rating,sqale_rating,"
+                    "security_hotspots,security_hotspots_reviewed"
+                )
+            },
+            auth=auth,
+            timeout=10
+        )
+        measures_response.raise_for_status()
+
+        quality_data = quality_response.json().get("projectStatus", {})
+        measures = measures_response.json().get(
+            "component", {}
+        ).get("measures", [])
+
+        metrics = {
+            item["metric"]: item.get("value", "0")
+            for item in measures
+        }
+
+        return {
+            "configured": True,
+            "available": True,
+            "quality_gate": quality_data.get("status", "UNKNOWN"),
+            "conditions": quality_data.get("conditions", []),
+            "bugs": metrics.get("bugs", "0"),
+            "vulnerabilities": metrics.get("vulnerabilities", "0"),
+            "code_smells": metrics.get("code_smells", "0"),
+            "coverage": metrics.get("coverage", "0"),
+            "duplications": metrics.get("duplicated_lines_density", "0"),
+            "reliability_rating": metrics.get("reliability_rating", "0"),
+            "security_rating": metrics.get("security_rating", "0"),
+            "maintainability_rating": metrics.get("sqale_rating", "0"),
+            "security_hotspots": metrics.get("security_hotspots", "0"),
+            "hotspots_reviewed": metrics.get("security_hotspots_reviewed", "0"),
+            "message": "Live SonarQube data retrieved successfully."
+        }
+
+    except requests.exceptions.Timeout:
+        message = "SonarQube API request timed out."
+    except requests.exceptions.ConnectionError:
+        message = "Cannot connect to SonarQube. Check that it is running."
+    except requests.exceptions.HTTPError as exc:
+        message = f"SonarQube returned HTTP {exc.response.status_code}."
+    except (ValueError, KeyError, requests.exceptions.RequestException):
+        message = "Could not retrieve SonarQube project information."
+
+    return {
+        "configured": True,
+        "available": False,
+        "message": message
+    }
+
+
+
 @app.get("/api/jenkins")
 @login_required
 def jenkins_api_status():
@@ -174,15 +260,20 @@ def jenkins_api_status():
     return data, status_code
 
 
+
 @app.get("/dashboard")
 @login_required
 def dashboard():
     jenkins = fetch_jenkins_data()
+    sonarqube = fetch_sonarqube_data()
+
     return render_template(
         "dashboard.html",
         username=session.get("username", "User"),
         jenkins=jenkins,
+        sonarqube=sonarqube,
     )
+
 
 
 

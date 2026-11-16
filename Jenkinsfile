@@ -1,14 +1,26 @@
+
 pipeline {
     agent any
 
     stages {
+
+        stage('Automated Testing & Coverage') {
+            steps {
+                sh '''
+                    docker build -f Dockerfile.test -t devsecops-flask-tests .
+                    docker run --name flask-test-run devsecops-flask-tests
+                    docker cp flask-test-run:/app/coverage.xml coverage.xml
+                    docker rm flask-test-run
+                '''
+            }
+        }
 
         stage('SonarQube Analysis') {
             steps {
                 script {
                     def scannerHome = tool 'SonarScanner'
                     withSonarQubeEnv('SonarQube') {
-                        sh "${scannerHome}/bin/sonar-scanner"
+                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.python.coverage.reportPaths=coverage.xml"
                     }
                 }
             }
@@ -16,7 +28,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-               sh 'docker build -f dockerfile.app -t devsecops-flask .'
+                sh 'docker build -f dockerfile.app -t devsecops-flask .'
             }
         }
 
@@ -32,5 +44,11 @@ pipeline {
             }
         }
 
+    }
+
+    post {
+        always {
+            sh 'docker rm -f flask-test-run || true'
+        }
     }
 }
